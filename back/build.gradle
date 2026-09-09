@@ -23,6 +23,7 @@ jacoco {
 sonar {
 	properties {
 		property "sonar.projectKey", "clems2_P7-CICD-Full-Stack_Back"
+		property "sonar.projectName", "MicroCRM Back"
 		property "sonar.organization", "clems2"
 		property "sonar.host.url", "https://sonarcloud.io"
 	}
