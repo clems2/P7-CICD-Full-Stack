@@ -50,7 +50,7 @@ jobs:
 
       - name: Upload back-end reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: back-reports
           path: |
@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload front-end coverage
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: front-coverage
           path: front/coverage/microcrm
