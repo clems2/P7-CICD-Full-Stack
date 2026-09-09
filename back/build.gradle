@@ -4,6 +4,7 @@ plugins {
 	id 'org.springframework.boot' version '3.2.5'
 	id 'io.spring.dependency-management' version '1.1.4'
 	id 'com.adarshr.test-logger' version '4.0.0'
+	id 'org.sonarqube' version '7.5.0.8588'
 }
 
 group = 'com.openclassroom.devops.orion'
@@ -17,6 +18,15 @@ java {
 
 jacoco {
 	toolVersion = '0.8.13'
+}
+
+sonar {
+	properties {
+		property "sonar.projectKey", "clems2_P7-CICD-Full-Stack_Back"
+		property "sonar.projectName", "MicroCRM Back"
+		property "sonar.organization", "clems2"
+		property "sonar.host.url", "https://sonarcloud.io"
+	}
 }
 
 repositories {
