@@ -1,5 +1,5 @@
-* {
-	root * /app/front
+:8080 {
+	root * /srv
 	encode gzip
 	try_files {path} /index.html
 	file_server
