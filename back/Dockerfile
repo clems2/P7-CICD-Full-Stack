@@ -31,6 +31,9 @@ WORKDIR /app
 # qui changera dès la mise en place des releases automatiques.
 COPY --from=build --chown=app:app /src/build/libs/*.jar ./app.jar
 
+RUN mkdir -p /data && chown app:app /data
+ENV MICROCRM_DB_PATH=/data/microcrm
+
 USER app
 
 # Port réel de l'API. La déclaration précédente indiquait 4200, qui est
