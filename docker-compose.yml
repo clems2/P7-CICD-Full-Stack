@@ -1,0 +1,38 @@
+name: microcrm
+
+services:
+  back:
+    build:
+      context: ./back
+    image: orion-microcrm-back:local
+    container_name: microcrm-back
+    ports:
+      - "8080:8080"
+    volumes:
+      # Volume nommé monté sur le répertoire où HSQLDB écrit ses
+      # fichiers. Les données survivent à la suppression du conteneur.
+      - microcrm-data:/data
+    environment:
+      MICROCRM_DB_PATH: /data/microcrm
+    restart: unless-stopped
+
+  front:
+    build:
+      context: ./front
+    image: orion-microcrm-front:local
+    container_name: microcrm-front
+    ports:
+      # Le conteneur écoute sur 8080 car il s'exécute sans privilèges ;
+      # la correspondance vers 80 rend l'application accessible sur
+      # http://localhost sans port explicite.
+      - "80:8080"
+    depends_on:
+      back:
+        # Attend que la sonde de santé du back réponde, et non son
+        # simple démarrage : le front n'est exposé qu'une fois l'API
+        # réellement prête à répondre.
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  microcrm-data:
