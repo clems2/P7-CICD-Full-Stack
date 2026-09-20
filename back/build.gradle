@@ -40,6 +40,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	runtimeOnly 'org.hsqldb:hsqldb'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 }
 
 test {
