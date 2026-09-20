@@ -1,0 +1,64 @@
+name: microcrm-elk
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: microcrm-elasticsearch
+    environment:
+      - discovery.type=single-node
+      # Sans cette ligne, Elasticsearch 8 active l'authentification et
+      # le chiffrement par défaut : Logstash et Kibana ne pourraient pas
+      # s'y connecter sans identifiants ni certificats.
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - microcrm
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: microcrm-logstash
+    volumes:
+      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    ports:
+      # 5044 reçoit les logs applicatifs du back-end,
+      # 5045 les logs d'accès du serveur web du front-end.
+      - "5044:5044"
+      - "5045:5045"
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - microcrm
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: microcrm-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - microcrm
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  microcrm:
+    external: true
+    name: microcrm-net

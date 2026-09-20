@@ -14,6 +14,8 @@ services:
       - microcrm-data:/data
     environment:
       MICROCRM_DB_PATH: /data/microcrm
+    networks:
+      - microcrm
     restart: unless-stopped
 
   front:
@@ -32,7 +34,12 @@ services:
         # simple démarrage : le front n'est exposé qu'une fois l'API
         # réellement prête à répondre.
         condition: service_healthy
+    networks:
+      - microcrm
     restart: unless-stopped
 
 volumes:
   microcrm-data:
+networks:
+  microcrm:
+    name: microcrm-net
