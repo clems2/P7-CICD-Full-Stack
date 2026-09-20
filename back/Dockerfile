@@ -33,6 +33,7 @@ COPY --from=build --chown=app:app /src/build/libs/*.jar ./app.jar
 
 RUN mkdir -p /data && chown app:app /data
 ENV MICROCRM_DB_PATH=/data/microcrm
+ENV SPRING_PROFILES_ACTIVE=container
 
 USER app
 

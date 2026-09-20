@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Reprend la configuration par défaut de Spring Boot :
+         couleurs, format lisible, niveaux. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Destination Logstash, surchargeable par variable d'environnement
+         pour que la même image fonctionne avec ou sans stack ELK. -->
+    <springProperty scope="context" name="logstashHost"
+                    source="logstash.host" defaultValue="logstash:5044"/>
+
+    <!-- Sortie console, toujours active : docker compose logs reste
+         utilisable quel que soit l'environnement. -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Profil par défaut : lecture humaine en développement local. -->
+    <springProfile name="!container">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Profil conteneur : la console reste active, et les logs sont
+         en plus poussés en JSON vers Logstash. -->
+    <springProfile name="container">
+        <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${logstashHost}</destination>
+            <!-- json_lines côté Logstash : un objet JSON par ligne. -->
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"application":"microcrm-back"}</customFields>
+            </encoder>
+            <!-- Si Logstash est injoignable, les événements sont mis en
+                 attente puis abandonnés au-delà de cette limite.
+                 L'application n'est jamais bloquée. -->
+            <ringBufferSize>8192</ringBufferSize>
+            <writeBufferSize>16384</writeBufferSize>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="LOGSTASH"/>
+        </root>
+    </springProfile>
+
+</configuration>
