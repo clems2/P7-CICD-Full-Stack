@@ -1,0 +1,10 @@
+{
+  "/persons": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/organizations": {
+    "target": "http://localhost:8080",
+    "secure": false
+  }
+}

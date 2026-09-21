@@ -6,7 +6,7 @@
 set -eu
 
 FRONT_URL="${FRONT_URL:-http://localhost}"
-API_URL="${API_URL:-http://localhost:8080}"
+API_URL="${API_URL:-http://localhost}"
 CYCLES="${1:-30}"
 
 echo "Génération de $CYCLES cycles vers $FRONT_URL et $API_URL"
@@ -21,10 +21,10 @@ while [ "$i" -le "$CYCLES" ]; do
   # Une requête sur cinq déclenche une erreur, pour que les
   # visualisations d'erreurs aient de la matière.
   if [ $((i % 5)) -eq 0 ]; then
-    curl -s -o /dev/null "$API_URL/ressource-inexistante"
-    curl -s -o /dev/null -X POST "$API_URL/persons" \
-      -H "Content-Type: application/json" \
-      -d '{"email":"pas-un-email"}'
+    curl -s -o /dev/null "$API_URL/persons/999999"
+    curl -s -o /dev/null "$API_URL/organizations/999999"
+    # 405 : méthode non autorisée
+    curl -s -o /dev/null -X DELETE "$API_URL/persons"
   fi
 
   i=$((i + 1))
