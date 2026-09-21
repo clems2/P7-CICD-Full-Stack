@@ -1,8 +1,21 @@
 :8080 {
-	root * /srv
-	encode gzip
-	try_files {path} /index.html
-	file_server
+	# Les chemins de l'API sont relayés vers le back-end : les requêtes
+	# traversent le serveur web et figurent donc dans ses logs d'accès,
+	# avec leur statut et leur durée.
+	handle /persons* {
+		reverse_proxy back:8080
+	}
+
+	handle /organizations* {
+		reverse_proxy back:8080
+	}
+
+	handle {
+		root * /srv
+		encode gzip
+		try_files {path} /index.html
+		file_server
+	}
 
 	log {
 		output net logstash:5045 {
