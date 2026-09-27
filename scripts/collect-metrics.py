@@ -100,14 +100,14 @@ def merged_branch(run):
 
 def lead_times(runs):
     """Lead time en minutes, pour chaque branche humaine fusionnée sur main."""
-    pull_requests = [r for r in runs
+    human_pr_runs = [r for r in runs
                      if r["event"] == "pull_request" and r["actor"]["login"] != AUTOMATED_ACTOR]
     values = []
     for merge in (r for r in runs if r["event"] == "push" and r["head_branch"] == MAIN_BRANCH):
         branch = merged_branch(merge)
         if not branch or branch.startswith("dependabot/"):
             continue
-        attempts = [r for r in pull_requests if r["head_branch"] == branch]
+        attempts = [r for r in human_pr_runs if r["head_branch"] == branch]
         if not attempts:
             continue
         first = min(attempts, key=lambda r: r["created_at"])
@@ -146,8 +146,8 @@ def main():
                         test_durations[component].append(
                             seconds_between(step["started_at"], step["completed_at"]))
 
-    pull_requests = [r for r in runs if r["event"] == "pull_request"]
-    rejected = [r for r in pull_requests if r["conclusion"] == "failure"]
+    pr_runs = [r for r in runs if r["event"] == "pull_request"]
+    failed_pr_runs = [r for r in pr_runs if r["conclusion"] == "failure"]
     failed_pushes = [r for r in pushes if r["conclusion"] == "failure"]
 
     print(f"Dépôt : {REPOSITORY} — {len(runs)} exécutions du workflow {WORKFLOW_NAME}\n")
@@ -174,11 +174,13 @@ def main():
         print(f"- Durée du pipeline ({event}) : {summarize(durations, 's')}")
     for component, durations in test_durations.items():
         print(f"- Durée des tests ({component}) : {summarize(durations, 's')}")
-    rejection = 100 * len(rejected) / len(pull_requests) if pull_requests else 0
-    automated = [r for r in pull_requests if r["actor"]["login"] == AUTOMATED_ACTOR]
-    automated_rejected = [r for r in rejected if r["actor"]["login"] == AUTOMATED_ACTOR]
-    print(f"- Taux de rejet par la CI : {rejection:.1f} % ({len(rejected)}/{len(pull_requests)}), "
-          f"dont {len(automated_rejected)}/{len(automated)} mises à jour automatiques")
+    failure_rate = 100 * len(failed_pr_runs) / len(pr_runs) if pr_runs else 0
+    automated_runs = [r for r in pr_runs if r["actor"]["login"] == AUTOMATED_ACTOR]
+    automated_failures = [r for r in failed_pr_runs if r["actor"]["login"] == AUTOMATED_ACTOR]
+    print(f"- Taux d'échec des exécutions sur demande de fusion : {failure_rate:.1f} % "
+          f"({len(failed_pr_runs)}/{len(pr_runs)}), "
+          f"dont {len(automated_failures)}/{len(automated_runs)} déclenchées "
+          f"par une mise à jour automatique")
 
 
 if __name__ == "__main__":
