@@ -671,28 +671,58 @@ protocoles HTTP et HTTPS a disparu.
 
 Quatre modifications sont alors nécessaires.
 
-**1. Remplacer le port d'écoute par le nom de domaine** dans `front/Caddyfile` :
+**1. Faire écouter Caddy sur le nom de domaine.** Le Caddyfile est copié dans l'image au moment du build : le modifier directement imposerait de reconstruire et republier l'image du front, ce qui contredirait le principe « construire une fois, déployer partout » retenu pour l'URL de l'API. Mieux vaut le paramétrer.
 
 ```caddy
-crm.exemple.fr {
+{
+	http_port 8080
+	https_port 8443
+}
+
+{$SITE_ADDRESS::8080} {
 	handle /persons* {
 		reverse_proxy back:8080
 	}
-	...
+	handle /organizations* {
+		reverse_proxy back:8080
+	}
+	handle {
+		root * /srv
+		encode gzip
+		try_files {path} /index.html
+		file_server
+	}
+	log {
+		output net logstash:5045 {
+			soft_start
+		}
+		format json
+	}
 }
 ```
 
-Caddy demande alors automatiquement un certificat Let's Encrypt. C'est ce qui rend le passage en
-HTTPS gratuit en une ligne.
+Sans variable définie, Caddy applique :8080 et le comportement local reste identique. Avec SITE_ADDRESS=crm.exemple.fr, il sert ce domaine et demande automatiquement un certificat Let's Encrypt. Les deux directives globales le font écouter sur des ports supérieurs à 1024, compatibles avec l'exécution sous utilisateur non privilégié, tandis que l'orchestration les expose sur 80 et 443.
+
+Le double : de {$SITE_ADDRESS::8080} n'est pas une coquille : le premier sépare la variable de sa valeur par défaut, le second appartient à :8080.
 
 **2. Créer un enregistrement DNS de type A** pour ce domaine, pointant vers l'adresse IP publique de
 la machine. Sans lui, Let's Encrypt ne peut pas vérifier que le domaine vous appartient et refuse le
 certificat.
 
-**3. Exposer les ports 80 et 443** dans le fichier d'orchestration du serveur, et ajouter un volume
-sur le répertoire de données de Caddy pour que les certificats survivent à un redémarrage. Let's
-Encrypt limite le nombre de demandes : sans ce volume, un conteneur recréé plusieurs fois finirait
-par se voir refuser un nouveau certificat.
+**3. Exposer les ports et persister les certificats** dans l'orchestration du serveur :
+```yaml
+services:
+  front:
+    image: ghcr.io/clems2/microcrm-front:latest
+    environment:
+      SITE_ADDRESS: crm.exemple.fr
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - caddy-data:/data
+```
+Le volume porte les certificats émis. Let's Encrypt plafonne le nombre de demandes par domaine et par semaine : sans lui, un conteneur recréé plusieurs fois finirait par se voir refuser un nouveau certificat.
 
 **4. Ajouter un job de déploiement** au workflow, dépendant du job de publication : connexion à la
 machine par clé SSH enregistrée en secret, puis `docker compose pull && docker compose up -d`.
