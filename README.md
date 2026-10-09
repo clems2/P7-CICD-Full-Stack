@@ -662,73 +662,9 @@ chaîne d'intégration a validé. Pour un déploiement reproductible, préférer
 
 Cet ordre est décrit dans le fichier d'orchestration et appliqué automatiquement.
 
-### Vers un déploiement distant
+### Vers un déploiement en production
 
-Il ne manque qu'une **cible d'exécution** : une machine accessible depuis Internet et un nom de
-domaine pointant vers elle. Les deux autres prérequis identifiés à l'analyse initiale ont été levés
-par le relais de l'API — l'URL de l'API n'est plus figée à la compilation, et le mélange des
-protocoles HTTP et HTTPS a disparu.
-
-Quatre modifications sont alors nécessaires.
-
-**1. Faire écouter Caddy sur le nom de domaine.** Le Caddyfile est copié dans l'image au moment du build : le modifier directement imposerait de reconstruire et republier l'image du front, ce qui contredirait le principe « construire une fois, déployer partout » retenu pour l'URL de l'API. Mieux vaut le paramétrer.
-
-```caddy
-{
-	http_port 8080
-	https_port 8443
-}
-
-{$SITE_ADDRESS::8080} {
-	handle /persons* {
-		reverse_proxy back:8080
-	}
-	handle /organizations* {
-		reverse_proxy back:8080
-	}
-	handle {
-		root * /srv
-		encode gzip
-		try_files {path} /index.html
-		file_server
-	}
-	log {
-		output net logstash:5045 {
-			soft_start
-		}
-		format json
-	}
-}
-```
-
-Sans variable définie, Caddy applique :8080 et le comportement local reste identique. Avec SITE_ADDRESS=crm.exemple.fr, il sert ce domaine et demande automatiquement un certificat Let's Encrypt. Les deux directives globales le font écouter sur des ports supérieurs à 1024, compatibles avec l'exécution sous utilisateur non privilégié, tandis que l'orchestration les expose sur 80 et 443.
-
-Le double : de {$SITE_ADDRESS::8080} n'est pas une coquille : le premier sépare la variable de sa valeur par défaut, le second appartient à :8080.
-
-**2. Créer un enregistrement DNS de type A** pour ce domaine, pointant vers l'adresse IP publique de
-la machine. Sans lui, Let's Encrypt ne peut pas vérifier que le domaine vous appartient et refuse le
-certificat.
-
-**3. Exposer les ports et persister les certificats** dans l'orchestration du serveur :
-```yaml
-services:
-  front:
-    image: ghcr.io/clems2/microcrm-front:latest
-    environment:
-      SITE_ADDRESS: crm.exemple.fr
-    ports:
-      - "80:8080"
-      - "443:8443"
-    volumes:
-      - caddy-data:/data
-```
-Le volume porte les certificats émis. Let's Encrypt plafonne le nombre de demandes par domaine et par semaine : sans lui, un conteneur recréé plusieurs fois finirait par se voir refuser un nouveau certificat.
-
-**4. Ajouter un job de déploiement** au workflow, dépendant du job de publication : connexion à la
-machine par clé SSH enregistrée en secret, puis `docker compose pull && docker compose up -d`.
-
-Les trois premiers points relèvent de la configuration de l'hébergement. Seul le quatrième modifie
-la chaîne d'intégration — et c'est le seul endroit où elle s'arrête aujourd'hui.
+La documentation technique (partie 3.3) décrit la cible retenue pour Orion. Le déploiement se fait sur des machines virtuelles internes, une de recette puis une de production, avec le même fichier d'orchestration. Les images y sont référencées par digest et leur signature est vérifiée avant le démarrage. Le déploiement est lancé à la main par un workflow dédié, exécuté par un runner auto-hébergé sur chaque machine : aucune connexion entrante n'est ouverte et aucun identifiant n'est stocké sur les machines. Le site est servi en HTTPS avec un certificat émis par l'autorité de certification interne.
 
 ---
 
@@ -839,8 +775,7 @@ conteneur. Le port 443 exige en outre des privilèges d'administration, incompat
 l'exécution non privilégiée retenue.
 
 Le serveur écoute donc en clair sur un port supérieur à 1024. Ce choix supprime aussi le risque de
-contenu mixte. La trajectoire vers un déploiement distant reste directe : Caddy obtient
-automatiquement un certificat valide dès qu'un nom de domaine remplace le port d'écoute.
+contenu mixte. En production, le site est désigné par son nom interne, ce qui active le HTTPS avec un certificat émis par l'autorité de certification interne (documentation technique, partie 3.3).
 
 ### Un Dockerfile par composant
 
