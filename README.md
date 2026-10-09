@@ -18,7 +18,7 @@ Ce dépôt contient l'application **et la chaîne d'industrialisation construite
 - **livraison** — deux images de conteneurs publiées automatiquement à chaque intégration, chacune
   identifiée par le commit dont elle est issue ;
 - **exploitation** — centralisation des logs applicatifs et d'accès, tableau de bord de supervision,
-  sauvegarde et restauration de la base, mesure des indicateurs de performance de la chaîne.
+  mesure des indicateurs de performance de la chaîne.
 
 Projet 7 du parcours Développeur Full-Stack Java & Angular d'OpenClassrooms, **Option B, scénario
 Orion**.
@@ -51,7 +51,6 @@ est construit ainsi ; la documentation technique explique ce qui a été mesuré
 - [Lancer la supervision](#lancer-la-supervision)
 - [Développer et tester](#développer-et-tester)
 - [Exécuter les scripts](#exécuter-les-scripts)
-- [Sauvegarder et restaurer](#sauvegarder-et-restaurer)
 - [Structure du dépôt](#structure-du-dépôt)
 - [Configuration](#configuration)
 - [Forker ce dépôt](#forker-ce-dépôt)
@@ -426,49 +425,6 @@ de commande reste dans l'historique.
 
 ---
 
-## Sauvegarder et restaurer
-
-> **Prérequis** : l'application doit tourner, ou avoir tourné au moins une fois — le script agit sur
-> le volume Docker, qui n'existe qu'à partir du premier démarrage.
-
-Les données applicatives sont le seul élément du projet qui n'existe nulle part ailleurs. Le code
-est dans Git, les images dans le registre, les rapports se régénèrent en relançant le pipeline. Si
-ces données disparaissent, rien ne permet de les reconstituer.
-
-```bash
-./scripts/backup-database.sh backup             # crée une archive horodatée
-./scripts/backup-database.sh list               # liste les archives, la plus récente en tête
-./scripts/backup-database.sh restore <archive>  # restaure l'archive indiquée
-```
-
-La base est stockée dans un volume Docker, pas dans les fichiers du projet. Le script ne peut donc
-pas y accéder directement : il démarre un conteneur temporaire qui monte à la fois le volume et le
-répertoire de sauvegarde, puis copie les données de l'un vers l'autre. Les archives sont déposées
-dans un répertoire exclu du suivi de version.
-
-**Le service est arrêté pendant l'opération**, quelques secondes. La base répartit ses données sur
-plusieurs fichiers. Si on les copiait pendant que l'application écrit, ils ne correspondraient pas
-au même instant et l'archive serait inutilisable. Cette courte indisponibilité est le prix d'une
-sauvegarde dont on sait qu'elle est restaurable.
-
-Après une restauration, deux vérifications. D'abord le volume de données :
-
-```bash
-curl -s "http://localhost/persons?size=1"       # lire le champ totalElements
-```
-
-Ensuite l'écriture, en créant un enregistrement de test. L'application ne s'exécute pas avec les
-privilèges d'administration : si les droits sur les fichiers n'avaient pas été préservés, elle
-pourrait lire mais plus écrire.
-
-Le script ne pose aucune question et renvoie un code de sortie explicite. Il peut donc être planifié
-tel quel, même si son déclenchement reste manuel dans le cadre du projet.
-
-**Revenir à une version antérieure de l'application** relève d'un autre mécanisme. Chaque image
-publiée porte le SHA de son commit : il suffit de démarrer l'image correspondante.
-
----
-
 ## Structure du dépôt
 
 ```
@@ -494,7 +450,7 @@ publiée porte le SHA de son commit : il suffit de démarrer l'image corresponda
 ├── scripts/
 │   ├── generate-traffic.sh          Génération de trafic applicatif
 │   ├── collect-metrics.py           Métriques DORA et KPI du pipeline
-│   └── backup-database.sh           Sauvegarde et restauration de la base
+│
 │
 ├── .github/
 │   ├── workflows/ci-cd.yml          Intégration et déploiement continus
@@ -544,7 +500,7 @@ opérations font exception.
 
 | Opération | Qui | Accès requis |
 |---|---|---|
-| Lancer, développer, tester, sauvegarder | Tout le monde | Aucun |
+| Lancer, développer, tester | Tout le monde | Aucun |
 | Mesurer le pipeline au-delà de 60 appels par heure | Tout le monde | Un jeton de son propre compte GitHub, sans portée |
 | Analyser la qualité en local | Mainteneurs du dépôt | Un accès à l'organisation SonarQube Cloud du projet |
 
