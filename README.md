@@ -838,6 +838,7 @@ défaut est recensé dans la documentation technique.
 **Les données ne persistent pas.** Vérifier que le volume est bien monté avec
 `docker compose config`. Un `docker compose down -v` supprime délibérément les données.
 
+
 **Kibana ne répond pas.** Compter une à deux minutes après le démarrage. Si l'attente se prolonge,
 vérifier la mémoire disponible : la stack ELK en réclame environ 4 Go.
 
