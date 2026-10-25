@@ -1,23 +1,23 @@
-# MicroCRM — Pipeline CI/CD
+# MicroCRM : pipeline CI/CD
 
 [![CI/CD](https://github.com/clems2/P7-CICD-Full-Stack/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/clems2/P7-CICD-Full-Stack/actions/workflows/ci-cd.yml)
 [![Quality Gate Back](https://sonarcloud.io/api/project_badges/measure?project=clems2_P7-CICD-Full-Stack_Back&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=clems2_P7-CICD-Full-Stack_Back)
 [![Quality Gate Front](https://sonarcloud.io/api/project_badges/measure?project=clems2_P7-CICD-Full-Stack_Front&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=clems2_P7-CICD-Full-Stack_Front)
 
 **MicroCRM** est une application interne de gestion de la relation client. Elle expose une API REST
-sur deux entités — les personnes et les organisations — servie par une interface Angular. Les
+sur deux entités, les personnes et les organisations, servie par une interface Angular. Les
 départements technique et commercial l'utilisent pour consulter et tenir à jour ces deux
 répertoires.
 
 Ce dépôt contient l'application **et la chaîne d'industrialisation construite autour d'elle** :
 
-- **intégration continue** — chaque modification est construite, testée et analysée avant de
-  pouvoir rejoindre la branche principale, qui exige quatre contrôles au vert ;
-- **qualité et sécurité** — analyse statique des deux composants et mesure de la couverture de
-  tests à chaque exécution ;
-- **livraison** — deux images de conteneurs publiées automatiquement à chaque intégration, chacune
-  identifiée par le commit dont elle est issue ;
-- **exploitation** — centralisation des logs applicatifs et d'accès, tableau de bord de supervision,
+- **intégration continue** : chaque modification est construite, testée et analysée avant de
+  pouvoir rejoindre la branche principale, qui exige quatre contrôles au vert.
+- **qualité et sécurité** : analyse statique des deux composants et mesure de la couverture de
+  tests à chaque exécution.
+- **livraison** : deux images de conteneurs publiées automatiquement à chaque intégration, chacune
+  identifiée par le commit dont elle est issue.
+- **exploitation** : centralisation des logs applicatifs et d'accès, tableau de bord de supervision,
   mesure des indicateurs de performance de la chaîne.
 
 Projet 7 du parcours Développeur Full-Stack Java & Angular d'OpenClassrooms, **Option B, scénario
@@ -39,7 +39,7 @@ Orion**.
 
 Les analyses, mesures et plans d'exploitation figurent dans la **documentation technique**, déposée
 avec les livrables du projet. Ce README décrit comment faire fonctionner le projet et pourquoi il
-est construit ainsi ; la documentation technique explique ce qui a été mesuré et analysé.
+est construit ainsi. La documentation technique explique ce qui a été mesuré et analysé.
 
 ---
 
@@ -70,22 +70,22 @@ est construit ainsi ; la documentation technique explique ce qui a été mesuré
 | Back-end | Spring Boot, Java, Gradle | 3.2.5, 21, 8.7 |
 | Front-end | Angular, TypeScript, Node | 17.3, 5.4, 20 |
 | Serveur web du front | Caddy | 2 |
-| Base de données | HSQLDB, en mode fichier sur volume | — |
+| Base de données | HSQLDB, en mode fichier sur volume | Fournie par Spring Boot |
 | Tests back-end | JUnit 5, couverture JaCoCo | 0.8.13 |
-| Tests front-end | Karma, ChromeHeadless, couverture LCOV | — |
-| Intégration continue | GitHub Actions | — |
-| Qualité et sécurité | SonarQube Cloud | — |
-| Conteneurisation | Docker multi-stage, Docker Compose | — |
-| Registre d'images | GitHub Container Registry | — |
+| Tests front-end | Karma, ChromeHeadless, couverture LCOV | Voir `front/package.json` |
+| Intégration continue | GitHub Actions | Service en ligne |
+| Qualité et sécurité | SonarQube Cloud | Service en ligne |
+| Conteneurisation | Docker multi-stage, Docker Compose | Selon le poste |
+| Registre d'images | GitHub Container Registry | Service en ligne |
 | Supervision | Elasticsearch, Logstash, Kibana | 8.11.0 |
 | Logs applicatifs | Logback, logstash-logback-encoder | 7.4 |
-| Surveillance des dépendances | Dependabot | — |
+| Surveillance des dépendances | Dependabot | Service en ligne |
 
 Le dépôt est organisé en **monorepo** : le back-end, le front-end et la configuration de
 conteneurisation cohabitent dans un seul dépôt, et le pipeline traite les deux chaînes de
 construction dans un même flux.
 
-Angular 17, Node 20 et Spring Boot 3.2 sont hors support. Ce constat est assumé et documenté —
+Angular 17, Node 20 et Spring Boot 3.2 sont hors support. Ce constat est assumé et documenté,
 voir [Stack applicative gelée](#stack-applicative-gelée).
 
 ---
@@ -125,7 +125,7 @@ et `npx ng` utilise la CLI fournie par les dépendances du projet.
 
 | Ressource | Besoin |
 |---|---|
-| Ports libres | 80 et 8080 pour l'application ; 5601, 9200, 5044 et 5045 pour la supervision |
+| Ports libres | 80 et 8080 pour l'application, 5601, 9200, 5044 et 5045 pour la supervision |
 | Mémoire | environ 1 Go pour l'application seule, 4 Go avec la supervision |
 | Accès au registre | aucun identifiant, les images publiées sont publiques |
 
@@ -182,10 +182,10 @@ curl -s "http://localhost/persons?size=1"
 ```
 
 La réponse est un document JSON contenant un champ `totalElements`. S'il vaut zéro, la base est
-vide ; s'il est supérieur à zéro, les données de démonstration ont bien été chargées.
+vide. S'il est supérieur à zéro, les données de démonstration ont bien été chargées.
 
 Enfin, ouvrir http://localhost : l'interface affiche la liste des personnes. Des listes vides
-signifient que l'API ne répond pas — voir [Dépannage](#dépannage).
+signifient que l'API ne répond pas, voir [Dépannage](#dépannage).
 
 En cas de doute, les journaux des deux services :
 
@@ -224,11 +224,11 @@ docker compose -f docker-compose-elk.yml up -d      # puis la supervision
 
 Compter une à deux minutes avant que Kibana ne réponde.
 
-**Importer le tableau de bord** — dans Kibana, *Stack Management → Saved Objects → Import*, puis
+**Importer le tableau de bord** : dans Kibana, *Stack Management → Saved Objects → Import*, puis
 sélectionner `elk/kibana-dashboard.ndjson`. L'import installe quatre visualisations et les deux vues
 de données associées.
 
-**Alimenter le tableau de bord** — lancer `./scripts/generate-traffic.sh`, puis élargir la fenêtre
+**Alimenter le tableau de bord** : lancer `./scripts/generate-traffic.sh`, puis élargir la fenêtre
 temporelle en haut à droite de Kibana.
 
 | Source collectée | Contenu | Index |
@@ -250,7 +250,7 @@ docker compose -f docker-compose-elk.yml down       # arrêter la supervision
 
 ### Back-end
 
-> **Prérequis** : JDK 21. Docker n'est pas nécessaire — le back-end démarre avec sa propre base,
+> **Prérequis** : JDK 21. Docker n'est pas nécessaire : le back-end démarre avec sa propre base,
 > écrite sur le disque.
 
 ```bash
@@ -261,7 +261,7 @@ cd back
 ./gradlew bootRun        # démarre l'application sur le port 8080
 ```
 
-Le rapport de couverture est produit dans `back/build/reports/jacoco/test/` — en HTML pour la
+Le rapport de couverture est produit dans `back/build/reports/jacoco/test/`, en HTML pour la
 lecture, en XML pour l'analyse. Sa génération est chaînée à la tâche de test par `finalizedBy`, donc
 un simple `./gradlew build` suffit à l'obtenir. Cette liaison rend l'oubli impossible en CI.
 
@@ -274,7 +274,7 @@ emplacements sont indépendants :
 | `docker compose up` | Volume Docker nommé | Sans effet sur `back/data/` |
 
 La variable `MICROCRM_DB_PATH` explique cette différence : le conteneur la définit sur `/data`, qui
-est monté sur le volume ; en local, elle n'est pas définie, donc la valeur par défaut
+est monté sur le volume. En local, elle n'est pas définie, donc la valeur par défaut
 d'`application.properties` s'applique et pointe sur `back/data/`.
 
 Dans les deux cas, la base contient les mêmes choses : les personnes et les organisations, chargées
@@ -335,7 +335,7 @@ Chaque composant possède son propre contexte de build, limité à son répertoi
 ## Exécuter les scripts
 
 Trois scripts sous `scripts/`. Ils ne font pas partie du pipeline : ils servent à la supervision, à
-la mesure et à l'exploitation locale. Aucune dépendance à installer — le Python se limite à sa
+la mesure et à l'exploitation locale. Aucune dépendance à installer : le Python se limite à sa
 bibliothèque standard.
 
 ### Générer du trafic
@@ -389,7 +389,7 @@ GITHUB_TOKEN=$(gh auth token) ./scripts/collect-metrics.py
 ```
 
 Sinon, créer un jeton personnel depuis *Settings → Developer settings → Personal access tokens* de
-son compte, **sans cocher aucune portée** — lire un dépôt public n'en demande aucune. Puis le saisir
+son compte, **sans cocher aucune portée**, car lire un dépôt public n'en demande aucune. Puis le saisir
 sans qu'il apparaisse dans l'historique du shell :
 
 ```bash
@@ -469,7 +469,7 @@ de commande reste dans l'historique.
 | Variable | Composant | Rôle | Valeur en conteneur |
 |---|---|---|---|
 | `MICROCRM_DB_PATH` | back | Emplacement des fichiers de la base | `/data`, monté sur un volume nommé |
-| `SPRING_PROFILES_ACTIVE` | back | Profil actif | `container` — active l'envoi des logs vers Logstash |
+| `SPRING_PROFILES_ACTIVE` | back | Profil actif | `container`, qui active l'envoi des logs vers Logstash |
 
 Hors du profil `container`, les logs restent lisibles sur la console et ne sont envoyés nulle part.
 Le développement local n'a donc pas besoin de la stack de supervision.
@@ -482,7 +482,7 @@ Le développement local n'a donc pas besoin de la stack de supervision.
 | front | 8080 | 80 |
 | Elasticsearch | 9200 | 9200 |
 | Kibana | 5601 | 5601 |
-| Logstash | 5044 (back), 5045 (front) | — |
+| Logstash | 5044 (back), 5045 (front) | Non publié |
 
 Pour libérer le port 80, modifier la correspondance du service front dans `docker-compose.yml`, par
 exemple `"8081:8080"`.
@@ -548,7 +548,7 @@ qui pointent vers le dépôt d'origine. Six éléments sont à reprendre.
 | À modifier | Où | Sinon |
 |---|---|---|
 | Les trois badges en tête de ce fichier | `README.md` | Ils affichent l'état du pipeline du dépôt d'origine, pas du vôtre |
-| L'URL de clone | `README.md` | — |
+| L'URL de clone | `README.md` | Les commandes clonent le dépôt d'origine |
 | Les références d'images `ghcr.io/clems2/…` | `README.md`, votre orchestration de déploiement | Vous déployez les images du dépôt d'origine |
 | Les clés et l'organisation SonarQube | bloc `sonar` de `back/build.gradle`, `front/sonar-project.properties` | L'analyse échoue : vous n'avez pas accès à l'organisation d'origine |
 | Le dépôt par défaut du script de mesure | `REPOSITORY` dans `scripts/collect-metrics.py` | Le script mesure le pipeline du dépôt d'origine |
@@ -585,7 +585,7 @@ docker pull ghcr.io/clems2/microcrm-front:latest
 
 | Étiquette | Rôle |
 |---|---|
-| `sha-<commit>` | Identifie précisément la version publiée — permet de revenir à un état antérieur |
+| `sha-<commit>` | Identifie précisément la version publiée et permet de revenir à un état antérieur |
 | `latest` | Dernière version publiée depuis `main` |
 
 ### Déployer depuis le registre
@@ -620,7 +620,7 @@ Cet ordre est décrit dans le fichier d'orchestration et appliqué automatiqueme
 
 ### Vers un déploiement en production
 
-La documentation technique (partie 3.3) décrit la cible retenue pour Orion. Le déploiement se fait sur des machines virtuelles internes, une de recette puis une de production, avec le même fichier d'orchestration. Les images y sont référencées par digest et leur signature est vérifiée avant le démarrage. Le déploiement est lancé à la main par un workflow dédié, exécuté par un runner auto-hébergé sur chaque machine : aucune connexion entrante n'est ouverte et aucun identifiant n'est stocké sur les machines. Le site est servi en HTTPS avec un certificat émis par l'autorité de certification interne.
+La documentation technique (partie 3.3) décrit la cible retenue pour Orion. Le déploiement se fait sur des machines virtuelles internes, une de recette puis une de production, avec le même fichier d'orchestration. Les images y sont référencées par digest et leur signature est vérifiée avant le démarrage. Le déploiement est lancé à la main par un workflow dédié, exécuté par un runner auto-hébergé sur chaque machine : aucune connexion entrante n'est ouverte et aucun identifiant n'est stocké sur les machines. Le site est servi en HTTPS avec un certificat émis par l'autorité de certification interne d'Orion, ou à défaut par Let's Encrypt avec une validation par DNS, qui ne demande aucune connexion entrante. En recette, des tests de fumée et un scan de sécurité dynamique (ZAP) valident chaque version avant la production, et des tests de bout en bout tournent chaque nuit dans la chaîne d'intégration. L'API n'ayant pas d'authentification, l'application reste dans le réseau interne : une ouverture au-delà ne serait envisageable qu'une fois l'API authentifiée.
 
 ---
 
@@ -631,9 +631,9 @@ Un fichier de workflow unique, `.github/workflows/ci-cd.yml`.
 | Déclencheur | Traitements | Effet en cas d'échec |
 |---|---|---|
 | Pull request vers `main` | Build, tests et couverture des deux composants, analyse de qualité | Fusion bloquée |
-| Push sur `main` | Idem, puis construction et publication des images | Publication annulée |
+| Fusion sur `main` | Idem, puis construction et publication des images | Publication annulée |
 | Planification quotidienne | Build, tests complets et analyse | Notification, sans blocage |
-| Déclenchement manuel | Idem, à la demande | — |
+| Déclenchement manuel | Idem, à la demande | Notification |
 
 L'exécution planifiée répond à un risque que les autres déclencheurs ne couvrent pas. Certaines
 dégradations surviennent sans qu'aucune ligne de code ne change : une dépendance transitive publie
@@ -667,7 +667,7 @@ n'est publiée à partir d'un code non validé.
 
 Une seule commande couvre la compilation, les tests et la couverture du back-end : la tâche `build`
 de Gradle inclut `test`, et le rapport JaCoCo y est chaîné par `finalizedBy`. Côté front-end, les
-tests et la construction sont deux commandes distinctes — un projet dont les tests passent peut
+tests et la construction sont deux commandes distinctes : un projet dont les tests passent peut
 échouer à se construire en mode production, d'où la vérification séparée.
 
 **Ce sont exactement les commandes utilisables en local.** Un échec de la chaîne d'intégration se
@@ -677,9 +677,9 @@ reproduit donc sur le poste de travail, sans avoir à deviner ce que fait le pip
 
 Des règles de dépôt appliquent la stratégie de branches, qui n'est donc pas qu'une convention :
 
-- toute modification passe par une pull request — un envoi direct sur `main` est rejeté ;
+- toute modification passe par une pull request, un envoi direct sur `main` est rejeté.
 - **quatre contrôles doivent réussir** avant la fusion : les deux jobs de build et les deux
-  contrôles de qualité ;
+  contrôles de qualité.
 - les branches doivent être à jour avec `main`, pour que les contrôles portent sur le résultat de la
   fusion et non sur un état antérieur.
 
@@ -731,7 +731,7 @@ conteneur. Le port 443 exige en outre des privilèges d'administration, incompat
 l'exécution non privilégiée retenue.
 
 Le serveur écoute donc en clair sur un port supérieur à 1024. Ce choix supprime aussi le risque de
-contenu mixte. En production, le site est désigné par son nom interne, ce qui active le HTTPS avec un certificat émis par l'autorité de certification interne (documentation technique, partie 3.3).
+contenu mixte. En production, le site est désigné par son nom interne, ce qui active le HTTPS avec un certificat émis par l'autorité de certification interne, ou à défaut par Let's Encrypt validé par DNS (documentation technique, partie 3.3).
 
 ### Un Dockerfile par composant
 
@@ -740,8 +740,8 @@ deux composants derrière un superviseur de processus. Le découpage donne à ch
 contexte de build autonome : une modification du front-end n'invalide plus le cache du back-end, et
 chaque composant se redémarre indépendamment.
 
-Les deux images suivent le même schéma en deux étapes. La première compile, avec l'outillage complet
-— JDK et Gradle d'un côté, Node et la CLI Angular de l'autre. La seconde ne conserve que l'artefact
+Les deux images suivent le même schéma en deux étapes. La première compile, avec l'outillage complet :
+JDK et Gradle d'un côté, Node et la CLI Angular de l'autre. La seconde ne conserve que l'artefact
 produit, sur une image d'exécution minimale. Dans les deux cas, les descripteurs de dépendances sont
 copiés **avant** les sources : la couche d'installation n'est invalidée que lorsque les dépendances
 changent réellement.
@@ -831,7 +831,7 @@ passent. Les mêmes contrôles s'appliqueront automatiquement et bloqueront la f
 http://localhost:8081.
 
 **Le front-end affiche des listes vides.** L'API n'est probablement pas joignable. Vérifier
-`docker compose ps` — le service back-end doit apparaître en *healthy*. L'application ne traite pas
+`docker compose ps` : le service back-end doit apparaître en *healthy*. L'application ne traite pas
 les erreurs de l'API : une panne du back-end se manifeste par des listes vides, sans message. Ce
 défaut est recensé dans la documentation technique.
 
