@@ -867,3 +867,4 @@ La **documentation technique** du projet est déposée avec les livrables. Elle 
 mise en œuvre du pipeline, les plans de conteneurisation et de déploiement, de testing périodique,
 de sécurité, de sauvegarde et de mise à jour, ainsi que les métriques DORA, les KPI et l'analyse du
 monitoring.
+Dernière vérification de la chaîne : soutenance du 03/11/2026.
